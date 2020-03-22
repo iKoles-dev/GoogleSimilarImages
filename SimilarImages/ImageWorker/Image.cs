@@ -37,7 +37,7 @@
                 Console.Write("Trying connection to new proxy: ");
                 ReqParametres req = new ReqParametres($"https://www.google.com/searchbyimage?image_url={_imageUrl}");
                 req.SetUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.53 Safari/537.36");
-                req.SetProxy(5000, Proxies.GetProxy());
+                //req.SetProxy(5000, Proxies.GetProxy());
                 LinkParser link = new LinkParser(req.Request);
                 if (link.IsError)
                 {
@@ -67,7 +67,7 @@
             {
                 try
                 {
-                    Console.WriteLine($"Trying to get {i/100} google page.");
+                    Console.WriteLine($"Trying to get page {i/100} of Google search results.");
                     ReqParametres req;
                     if (i == 0)
                     {
@@ -78,7 +78,7 @@
                         req = new ReqParametres($"{googleUrl}&start={i}&ijn={i / 100}&async=_id:rg_s,_pms:s,_jsfs:Ffpdje,_fmt:pc&asearch=ichunk");
                     }
                     req.SetUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.53 Safari/537.36");
-                    req.SetProxy(3000, Proxies.GetProxy());
+                    //req.SetProxy(3000, Proxies.GetProxy());
                     LinkParser linkParser = new LinkParser(req.Request);
                     if (linkParser.IsError)
                     {

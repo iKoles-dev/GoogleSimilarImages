@@ -1,6 +1,7 @@
 ﻿namespace SimilarImages
 {
     using System;
+    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Globalization;
     using System.IO;
@@ -14,10 +15,15 @@
         private HashSet<string> _allGoogleImagesLinks = new HashSet<string>();
         private List<CsvImage> _csv = new List<CsvImage>();
 
+        private string _path = "";
+        private int badDownload = 0;
+        private int count = 0;
+
         private string _saveFilesDirectory;
 
         public void SetPath(string path)
         {
+            _path = path;
             if (path.ToLower().EndsWith(".jpg") || path.ToLower().EndsWith(".jpeg") || path.ToLower().EndsWith(".png"))
             {
                 Console.WriteLine($"Found images at path {path}.");
@@ -51,38 +57,56 @@
                             _allGoogleImagesLinks.Add(imageCrowledImageLink);
                         }
                     });
-            Console.WriteLine($"Totaly found {_allGoogleImagesLinks.Count} image links.");
+            Console.WriteLine($"Found {_allGoogleImagesLinks.Count} links in total.");
         }
 
         public void StartDownloadImage()
         {
-            _saveFilesDirectory = Directory.GetCurrentDirectory() + "/" + DateTime.Now.Day + "-" + DateTime.Now.Hour + "-" + DateTime.Now.Minute + "/";
+            _saveFilesDirectory = Directory.GetCurrentDirectory() + "/"+ Path.GetFileName(_path) + " " + DateTime.Now.Day + "-" + DateTime.Now.Hour + "-" + DateTime.Now.Minute + "/";
             Directory.CreateDirectory(_saveFilesDirectory);
-            int badDownload = 0;
             foreach (var allGoogleImagesLink in _allGoogleImagesLinks)
             {
-                string imageName = allGoogleImagesLink.Split("/")[allGoogleImagesLink.Split("/").Length - 1];
-                imageName = new Random().Next().ToString()+imageName;
-                Downloader downloader = new Downloader(allGoogleImagesLink, _saveFilesDirectory + imageName);
-                new Thread((() =>
-                                   {
-                                       if (downloader.Download())
-                                       {
-                                           _csv.Add(new CsvImage(allGoogleImagesLink, _saveFilesDirectory + imageName));
-                                       }
-                                       else
-                                       {
-                                           badDownload++;
-                                       }
-                                       Console.WriteLine($"Currently downloaded {(((badDownload + _csv.Count)*1.0f/_allGoogleImagesLinks.Count)*100).ToString("##.00")}%");
-                                   })).Start();
-            }
-
-            while (badDownload+_csv.Count!=_allGoogleImagesLinks.Count)
-            {
+                string param = allGoogleImagesLink;
+                new Thread(
+                    () =>
+                        {
+                            DownloadCheck(param);
+                            count++;
+                        }).Start();
                 Thread.Sleep(100);
             }
-            Console.WriteLine("Downloaded ended!");
+
+            while (count<_allGoogleImagesLinks.Count)
+            {
+                int tempCount = count;
+                Thread.Sleep(10000);
+                if (tempCount == count && count < _allGoogleImagesLinks.Count)
+                {
+                    count = _allGoogleImagesLinks.Count;
+                }
+            }
+            Console.WriteLine("Download finished!");
+        }
+
+        private void DownloadCheck(string allGoogleImagesLink)
+        {
+            string imageName = allGoogleImagesLink.Split("/")[allGoogleImagesLink.Split("/").Length - 1];
+            imageName = new Random().Next().ToString() + imageName;
+            Downloader downloader = new Downloader(allGoogleImagesLink, _saveFilesDirectory + imageName);
+            if (downloader.Download())
+            {
+                _csv.Add(new CsvImage(allGoogleImagesLink, _saveFilesDirectory + imageName));
+            }
+            else
+            {
+                badDownload++;
+            }
+
+            if (count == _allGoogleImagesLinks.Count)
+            {
+                return;
+            }
+            Console.WriteLine($"Currently downloading {(((badDownload + _csv.Count) * 1.0f / _allGoogleImagesLinks.Count) * 100).ToString("##.00")}%");
         }
 
         public void CreateMetaFile()

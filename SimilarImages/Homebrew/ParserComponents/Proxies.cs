@@ -12,8 +12,7 @@ namespace Homebrew
 
     public static class Proxies
     {
-        private static  List<string> rawProxies = new List<string>();
-        private static List<string> allProxies = new List<string>();
+        private static  List<string> allProxies = new List<string>();
 
         public static bool SetProxyFile(string fileLink)
         {
@@ -26,9 +25,8 @@ namespace Homebrew
                     Console.WriteLine("No proxies found");
                     return false;
                 }
-                rawProxies.AddRange(proxies);
+                allProxies.AddRange(proxies);
                 Console.WriteLine($"Loaded {proxies.Length} proxies");
-                CheckProxy();
                 return true;
             }
             else
@@ -37,37 +35,37 @@ namespace Homebrew
             }
         }
 
-        private static void CheckProxy()
-        {
-            Console.WriteLine("Start proxy checking.");
-            new Thread((() =>
-                               {
-                                   rawProxies.ForEach(
-                                       proxy =>
-                                           {
-                                               new Thread((() =>
-                                                                  {
-                                                                      try
-                                                                      {
-                                                                          ReqParametres req = new ReqParametres("https://www.google.com/search?&q=gmail");
-                                                                          req.SetUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.53 Safari/537.36");
-                                                                          req.SetProxy(5000, proxy);
-                                                                          LinkParser link = new LinkParser(req.Request);
-                                                                          if (!link.IsError && link.Data.Contains("is email that"))
-                                                                          {
-                                                                              allProxies.Add(proxy);
-                                                                          }
+        //private static void CheckProxy()
+        //{
+        //    Console.WriteLine("Start proxy checking.");
+        //    new Thread((() =>
+        //                       {
+        //                           rawProxies.ForEach(
+        //                               proxy =>
+        //                                   {
+        //                                       new Thread((() =>
+        //                                                          {
+        //                                                              try
+        //                                                              {
+        //                                                                  ReqParametres req = new ReqParametres("https://www.google.com/search?&q=gmail");
+        //                                                                  req.SetUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.53 Safari/537.36");
+        //                                                                  req.SetProxy(5000, proxy);
+        //                                                                  LinkParser link = new LinkParser(req.Request);
+        //                                                                  if (!link.IsError && link.Data.Contains("is email that"))
+        //                                                                  {
+        //                                                                      allProxies.Add(proxy);
+        //                                                                  }
 
-                                                                      }
-                                                                      catch (Exception) { }
-                                                                  })).Start();
-                                           });
-                               } )).Start();
-            while (allProxies.Count < 10)
-            {
-                Thread.Sleep(100);
-            }
-        }
+        //                                                              }
+        //                                                              catch (Exception) { }
+        //                                                          })).Start();
+        //                                   });
+        //                       } )).Start();
+        //    while (allProxies.Count < 10)
+        //    {
+        //        Thread.Sleep(100);
+        //    }
+        //}
         public static string GetProxy()
         {
             if (allProxies.Count > 0)

@@ -24,13 +24,14 @@ namespace SimilarImages
             Console.WriteLine("Enter path to photo or directory with photos.");
             ImageController imageController = new ImageController();
             imageController.SetPath(Console.ReadLine().Replace("\"", "").Replace("'", ""));
-            Console.WriteLine("Crawling has been started");
+            Console.WriteLine("Started crawling");
             imageController.StartParsing();
             Console.WriteLine("Downloading has been started.");
             imageController.StartDownloadImage();
             Console.WriteLine("Creating meta-file.");
             imageController.CreateMetaFile();
-            Console.WriteLine("Work has been done!");
+            Console.WriteLine("Task completed!");
+            Console.ReadLine();
         }
     }
 }
